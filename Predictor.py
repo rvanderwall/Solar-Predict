@@ -35,9 +35,9 @@ def find_fit_parameters(set_of_gefs_data, station_training_labels):
             station_training_data = translate_gefs_into_station(training_data, latitudes, longitudes, station_training_labels.station_info, s)
             station_training_data_set.append(station_training_data)
 
+        print "Station: " + str(s)
         # theta[s,0], theta[s,1] = use_simple_average(labeled_data, station_id)
         #theta[s] = use_linear_regression(station_training_data_set, station_training_labels.solar_output_for_station(s))
-        print "Station: " + str(s)
         theta[s] = use_gradient_descent(station_training_data_set, station_training_labels.solar_output_for_station(s))
     return theta
 
@@ -95,14 +95,16 @@ def use_linear_regression(station_data_set, labeled_data):
     return w
 
 def use_gradient_descent(station_data_set, labeled_data):
-    data_size = len(station_data_set[0])
-    A = np.ones(data_size)
-    for station_data in station_data_set:
-        A = np.vstack((A, station_data))
-    AA = A[1:,:]    # Strip off row of ones, not needed
+    A = None
 
-    (mu, sigma) = feature_normalization_constants(AA.T)
-    X = normalize_features(AA.T, mu, sigma)
+    for station_data in station_data_set:
+        if A == None:
+            A = station_data
+        else:
+            A = np.vstack((A, station_data))
+
+    (mu, sigma) = feature_normalization_constants(A.T)
+    X = normalize_features(A.T, mu, sigma)
     y = np.reshape(labeled_data,(-1,1))
     num_features = X.shape[1]
     initial_theta = np.zeros((num_features+1,1))

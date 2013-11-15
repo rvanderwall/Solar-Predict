@@ -26,11 +26,17 @@ def main():
     print "Found fitting parameters:"
     print fitted_theta.shape
     print fitted_theta[0,:]
-    vd.show_data_and_fit(training_data_set, "GEFS", station_info, solar_output_training_data, fitted_theta)
+    #vd.show_data_and_fit(training_data_set, "GEFS", station_info, solar_output_training_data, fitted_theta)
+    prediction_of_training_data = get_prediction(fitted_theta, training_data_set, station_info)
+    print "Predicting based on training data."
+    cost = solar_output_training_data.cost(prediction_of_training_data[:,1:])
+    print cost
 
     #  See how well we predict known data
-    prediction_of_training_data = get_prediction(fitted_theta, training_data_set, station_info)
-    print "Predicting based on training data.  (Should be really close since it was used to train."
+    cooked_training_data = GEFS_Data_Set.threshold_data(training_data_set)
+    #vd.show_data_and_fit(cooked_training_data, "GEFS", station_info, solar_output_training_data, fitted_theta)
+    prediction_of_training_data = get_prediction(fitted_theta, cooked_training_data, station_info)
+    print "Predicting based on cooked training data."
 
     # TODO:  Split data into train, test, cv so that this cost is meaningful
     cost = solar_output_training_data.cost(prediction_of_training_data[:,1:])
@@ -47,7 +53,8 @@ def main():
     # 2410906.84649 # GD alpha = 50000, i = 2000
     # 2410911.57549 # GD alpha = 10000, i = 10000
 
-    prediction_of_test_data = get_prediction(fitted_theta, test_data_set, station_info)
+    cooked_test_data = GEFS_Data_Set.threshold_data(test_data_set)
+    prediction_of_test_data = get_prediction(fitted_theta, cooked_test_data, station_info)
 
     sf = Submission.SubmissionFile(submission_file)
     sf.write(station_info.stations, prediction_of_test_data)
@@ -72,14 +79,14 @@ def find_fitting_theta(training_data_set, solar_output_training_data):
 def read_theta(training_data_set, solar_output_training_data):
     try:
         print "read theta from pk files"
-        with open('../theta.pk', 'rb') as input:
+        with open('theta.pk', 'rb') as input:
             theta = pickle.load(input)
 
     except IOError:
         theta = find_fitting_theta(training_data_set, solar_output_training_data)
 
         print "write theta to pk files"
-        with open('../theta.pk', 'wb') as output:
+        with open('theta.pk', 'wb') as output:
             pickle.dump(theta, output, pickle.HIGHEST_PROTOCOL)
 
     print "theta retrieval complete"

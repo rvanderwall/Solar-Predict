@@ -6,7 +6,6 @@ __author__ = 'robertv'
 import pickle
 from src.Helpers import date_lists_are_same
 
-
 data_descriptors = [
         ("dlwrf", "sfc", "Downward_Long-Wave_Rad_Flux" ),
         ("dswrf", "sfc", "Downward_Short-Wave_Rad_Flux" ),
@@ -27,7 +26,7 @@ data_descriptors = [
 
 
 def get_GEFS_data_from_files(solar_output_training_data, station_info):
-    show_plots=True
+    show_plots=False
 
     try:
         print "read data from pk files"
@@ -48,12 +47,40 @@ def get_GEFS_data_from_files(solar_output_training_data, station_info):
 
     print "data retrieval complete"
 
-    for training_data in training_data_set:
+    trimmed_data_set = trim_unwanted_data(training_data_set)
+    trimmed_test_set = trim_unwanted_data(test_data_set)
+
+    for training_data in trimmed_data_set:
         if show_plots:
             vd.show_output_vs_gefsdata(training_data, training_data.name, station_info, solar_output_training_data)
 
-    return (training_data_set, test_data_set)
+    return (trimmed_data_set, trimmed_test_set)
 
+def trim_unwanted_data(original_dataset):
+    trimmed_data_set = []
+    for gefs_data in original_dataset:
+        alias = gefs_data.alias
+        if alias == "dswrf" or \
+            alias == "uswrf" or \
+            alias == "tmax" or \
+            alias == "apcp" or \
+            alias == "tcdc" or \
+            alias == "ulwrf":
+            trimmed_data_set.append(gefs_data)
+    return trimmed_data_set
+
+
+def threshold_data(training_data_set):
+    for training_data in training_data_set:
+        if training_data.alias == "tmaxX":
+            training_data.data[training_data.data < 100] = 100
+        elif training_data.alias == "ulwrf":
+            training_data.data[training_data.data < 400] = 350
+        elif training_data.alias == "apcp":
+            training_data.data[training_data.data < 0.10] = 0.05
+        elif training_data.alias == "tcdc":
+            training_data.data[training_data.data < 0.03] = 0.01
+    return training_data_set
 
 def _get_GEFS_data(solar_output_training_data, station_info):
 

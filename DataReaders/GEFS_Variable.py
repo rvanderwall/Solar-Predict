@@ -3,11 +3,11 @@ __author__ = 'robertv'
 from netCDF4 import Dataset
 import numpy as np
 
-def get_gefs_data(var_short, var_type, var_long):
-    gefs_training_file = "Data/train/" + var_short + "_" + var_type + "_latlon_subset_19940101_20071231.nc"
-    gefs_test_file = "Data/test/" + var_short + "_" + var_type + "_latlon_subset_20080101_20121130.nc"
-    values_training_data = GEFS_Variable(gefs_training_file, var_long)
-    values_test_data = GEFS_Variable(gefs_test_file, var_long)
+def get_gefs_data(var_alias, var_type, var_name):
+    gefs_training_file = "Data/train/" + var_alias + "_" + var_type + "_latlon_subset_19940101_20071231.nc"
+    gefs_test_file = "Data/test/" + var_alias + "_" + var_type + "_latlon_subset_20080101_20121130.nc"
+    values_training_data = GEFS_Variable(gefs_training_file, var_name, var_alias)
+    values_test_data = GEFS_Variable(gefs_test_file, var_name, var_alias)
     return values_training_data, values_test_data
 
 class GEFS_Variable:
@@ -16,10 +16,12 @@ class GEFS_Variable:
     data = np.array((1))
     latitudes = np.array((1))
     longitudes = np.array((1))
+    alias = ""
     name = ""
 
-    def __init__(self, datafile, name):
+    def __init__(self, datafile, name, alias):
         self.name = name
+        self.alias = alias
 
         if datafile != None:
             self.read_netcdf4(datafile, name)

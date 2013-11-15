@@ -1,9 +1,9 @@
-from src import plotter
 
 __author__ = 'robertv'
 
 from src.Predictor import translate_gefs_into_station, get_lat_lon_from_dataset, get_daily_data_from_hourly
 from src.Predictor import get_prediction
+from src.plotter import plotter
 
 def show_output_vs_elevation(station_info, solar_output_training_data):
     elevations = station_info.elevations
@@ -22,12 +22,13 @@ def show_output_vs_gefsdata(gefs_data, gefs_name, station_info, solar_output_tra
     station_training_data = translate_gefs_into_station(training_data, latitudes, longitudes, station_info, stationID)
 
     solar_output = solar_output_training_data.station_solar_output_data[:,stationID]
-
+    print gefs_name
+    print station_training_data[0:8]
     plotter.plot_xy_data(station_training_data, gefs_name, solar_output, "Solar output vs gefs")
 
 def show_data_and_fit(gefs_data_set, gefs_name, station_info, solar_output_training_data, theta):
     prediction_of_training_data = get_prediction(theta, gefs_data_set, station_info)
 
-    for stationID in range(0, 10):
+    for stationID in range(0, 2):
         solar_output = solar_output_training_data.station_solar_output_data[:,stationID]
         plotter.plot_xy_data_with_fit(prediction_of_training_data[:,0], prediction_of_training_data[:,stationID+1], solar_output, gefs_name, "Solar with fit")
